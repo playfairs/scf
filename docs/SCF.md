@@ -24,10 +24,14 @@ Secure allocations are zero-initialized, can be explicitly cleared repeatedly, a
 
 Keys store their material in secure allocations. Provider context records use secure allocations for framework-owned state, while provider callbacks remain responsible for clearing and releasing callback-owned state.
 
-## Безопасная память
+## Self-Tests and KATs
 
-Публичный API `scf_secure_allocate` возвращает непрозрачный дескриптор выделения. Дескриптор владеет своим хранилищем и должен освобождаться через `scf_secure_destroy`. Данные, возвращённые `scf_secure_data`, являются заимствованными, действуют только пока дескриптор существует и не должны использоваться после его уничтожения.
+The KAT registry is created explicitly with a provider registry. A KAT descriptor identifies the provider type, provider identifier, test identifier, test name, generic vector buffers, and an execution callback. Vector buffers may contain input, expected output, key, nonce, salt, or auxiliary algorithm-specific data without defining an algorithm-specific public structure.
 
-Безопасные блоки памяти обнуляются при выделении, могут многократно очищаться явно и повторно очищаются при уничтожении через архитектурную Assembly-примитиву. Выделения нулевого размера допустимы и не содержат данных. Запрошенное выравнивание должно быть степенью двойки и не быть меньше выравнивания указателя. Некорректное выравнивание и переполнение расчёта размера возвращают ошибку без выделения памяти.
+Registration validates the descriptor, verifies that the provider exists, copies the test name, and copies every vector buffer into secure memory. The caller retains ownership of its original descriptor and buffers. The registry owns its copied data and clears it when a test is unregistered or the registry is destroyed.
 
-Ключи хранят материал в безопасных выделениях. Записи контекстов провайдеров используют безопасные выделения для состояния, принадлежащего фреймворку, а callback-функции провайдеров самостоятельно отвечают за очистку и освобождение принадлежащего им состояния.
+Individual tests, all tests for a provider, and all registered tests can be executed deterministically. Results expose provider and test identifiers, bounded names, and a status category only; vector data and key material are never included in results or failure messages. Registered tests are never silently skipped. Missing providers, invalid descriptors, duplicate tests, unsupported callbacks, failed callbacks, internal failures, and empty test sets have distinct statuses.
+
+Provider callbacks must not retain vector pointers after returning. The callback may return success, test failure, unsupported, invalid test, or internal failure. Other callback statuses are normalized to an internal failure so the KAT boundary remains predictable for future startup or FIPS-style validation.
+
+No cryptographic algorithm is included in the KAT framework. The current dummy provider and vectors exist only to exercise registration, dispatch, cleanup, and failure handling.
