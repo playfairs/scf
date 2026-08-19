@@ -27,15 +27,10 @@
           default = pkgs.mkShell {
             packages = with pkgs; [
               gcc
-              binutils
               gnumake
-              pkg-config
+              binutils
             ];
 
-            shellHook = ''
-              echo "CC: $(cc --version | head -n 1)"
-              echo "AS: $(as --version | head -n 1)"
-            '';
           };
         }
       );

@@ -7,5 +7,5 @@ _scf_asm_test:
 .globl scf_asm_test
 scf_asm_test:
 #endif
-    leaq 1(%rdi), %rax
+    add x0, x0, #1
     ret
