@@ -1,17 +1,17 @@
 # SCF
 
-SCF — это базовая часть криптографического фреймворка SCARLETT.
+SCF is the SCARLETT Cryptographic Framework foundation.
 
-Первоначальная реализация включает публичный C-API, определения версий, выбор ассемблерного кода с учетом архитектуры, статическую библиотеку и исполняемый файл для тестирования на языке C.
+The initial foundation contains a public C API, version definitions, architecture-specific Assembly selection, a static library, and a C test executable.
 
-Криптографические алгоритмы не реализованы.
+No cryptographic algorithms are implemented.
 
-## Модель поставщика
+## Provider mодель (Model)
 
-Реализации алгоритмов регистрируют дескриптор в явно созданном `scf_provider_registry`. Каждый дескриптор идентифицирует свой тип поставщика, числовой идентификатор, имя, возможности и функции обратного вызова жизненного цикла контекста.
+Algorithm implementations register a descriptor with an explicitly created `scf_provider_registry`. Each descriptor identifies its provider type, numeric identifier, name, capabilities, and context lifecycle callbacks.
 
-Регистрация копирует метаданные дескриптора и имя поставщика в реестр. Функции обратного вызова и реализация, принадлежащая этим функциям, остаются в собственности регистрирующей реализации и должны оставаться действительными до тех пор, пока поставщик не будет отменен и все контексты, созданные на его основе, не будут уничтожены.
+Registration copies the descriptor metadata and provider name into the registry. The callback functions and callback-owned implementation remain owned by the registering implementation and must remain valid until the provider is unregistered and all contexts created from it are destroyed.
 
-Поиск возвращает скопированные метаданные. Создание контекста выбирает зарегистрированного поставщика по типу и идентификатору, сохраняет этого поставщика на протяжении всего жизненного цикла контекста и вызывает его функцию обратного вызова для создания контекста. Отмена регистрации предотвращает новые поиски и контексты, позволяя при этом завершить существующие контексты. Уничтожение реестра возвращает статус «занято», пока остаются все зарегистрированные или сохраненные поставщики.
+Lookup returns copied metadata. Context creation selects a registered provider by type and identifier, retains that provider for the lifetime of the context, and invokes its context creation callback. Unregistration prevents new lookups and contexts while allowing existing contexts to finish. Registry destruction returns a busy status while any registered or retained provider remains.
 
-Реестр является явным непрозрачным объектом. Никакой изменяемый реестр поставщиков не предоставляется в качестве глобального публичного состояния. Доступ к реестру синхронизируется внутри, в то время как реализации поставщиков остаются ответственными за собственное состояние обратного вызова.
+The registry is an explicit opaque object. No mutable provider registry is exposed as global public state. Registry access is synchronized internally, while provider implementations remain responsible for their own callback state.
