@@ -178,6 +178,42 @@ int scf_unit_sha256(void)
     {
         return 1;
     }
+    for (uint32_t trial = 0; trial < 32; ++trial)
+    {
+        uint32_t seed = UINT32_C(0x9e3779b9) ^ trial;
+        scf_byte blocks[256];
+        uint32_t reference[8] = {0x6a09e667,
+                                 0xbb67ae85,
+                                 0x3c6ef372,
+                                 0xa54ff53a,
+                                 0x510e527f,
+                                 0x9b05688c,
+                                 0x1f83d9ab,
+                                 0x5be0cd19};
+        uint32_t backend[8];
+        scf_size block_count = (trial % 4u) + 1u;
+
+        for (scf_size index = 0;
+             index < block_count * SCF_SHA256_BLOCK_SIZE;
+             ++index)
+        {
+            seed = seed * UINT32_C(1664525)
+                   + UINT32_C(1013904223);
+            blocks[index] = (scf_byte)(seed >> 24);
+        }
+        memcpy(backend, reference, sizeof(reference));
+        scf_sha256_compress_c(reference,
+                              blocks,
+                              block_count);
+        scf_sha256_compress_asm(backend,
+                                blocks,
+                                block_count);
+        if (memcmp(reference, backend, sizeof(reference))
+            != 0)
+        {
+            return 1;
+        }
+    }
     if (scf_provider_registry_create(&providers)
             != SCF_STATUS_SUCCESS
         || scf_sha256_register(providers)
