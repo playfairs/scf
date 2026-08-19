@@ -9,6 +9,7 @@
 #include <scf/hash.h>
 #include <scf/kdf.h>
 #include <scf/keys.h>
+#include <scf/memory.h>
 #include <scf/provider.h>
 
 void *scf_internal_alloc(scf_size size);

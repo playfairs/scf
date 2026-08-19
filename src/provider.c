@@ -22,6 +22,7 @@ struct scf_provider_registry {
 struct scf_provider_context {
 	scf_provider_entry *entry;
 	void *state;
+	scf_secure_allocation *memory;
 };
 
 static int scf_provider_type_valid(scf_provider_type type)
@@ -173,6 +174,8 @@ scf_status scf_provider_context_create(scf_provider_registry *registry, scf_prov
 {
 	scf_provider_entry *entry;
 	scf_status status;
+	scf_secure_allocation *memory = NULL;
+	scf_status memory_status;
 
 	if (registry == NULL || context == NULL || !scf_internal_buffer_valid(parameters) || !scf_provider_type_valid(type) || identifier == 0) {
 		return SCF_STATUS_INVALID_ARGUMENT;
@@ -187,13 +190,17 @@ scf_status scf_provider_context_create(scf_provider_registry *registry, scf_prov
 	entry->references++;
 	scf_provider_unlock(registry);
 
-	*context = scf_internal_alloc(sizeof(**context));
-	if (*context == NULL) {
+	memory_status = scf_secure_allocate(sizeof(**context), _Alignof(max_align_t), &memory);
+	if (memory_status != SCF_STATUS_SUCCESS) {
 		scf_provider_lock(registry);
 		entry->references--;
 		scf_provider_unlock(registry);
-		return SCF_STATUS_ALLOCATION_FAILED;
+		return memory_status;
 	}
+	scf_buffer context_memory;
+	scf_secure_data(memory, &context_memory);
+	*context = (scf_provider_context *)(void *)context_memory.data;
+	(*context)->memory = memory;
 	(*context)->entry = entry;
 	(*context)->state = NULL;
 	status = entry->descriptor.context_create(parameters, &(*context)->state);
@@ -224,8 +231,8 @@ void scf_provider_context_destroy(scf_provider_context *context)
 	entry = context->entry;
 	registry = entry->registry;
 	entry->descriptor.context_destroy(context->state);
-	scf_internal_clear(context, sizeof(*context));
-	scf_internal_free(context);
+	scf_secure_allocation *memory = context->memory;
+	scf_secure_destroy(memory);
 	scf_provider_lock(registry);
 	entry->references--;
 	if (entry->removed && entry->references == 0) {
