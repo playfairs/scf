@@ -34,4 +34,6 @@ Individual tests, all tests for a provider, and all registered tests can be exec
 
 Provider callbacks must not retain vector pointers after returning. The callback may return success, test failure, unsupported, invalid test, or internal failure. Other callback statuses are normalized to an internal failure so the KAT boundary remains predictable for future startup or FIPS-style validation.
 
+The provider registry must remain alive for the entire lifetime of its KAT registry and provider contexts. Provider descriptors and their callback functions are borrowed by hash, cipher, KDF, provider, and KAT contexts; the descriptor storage and callback code must remain valid until those contexts are destroyed.
+
 No cryptographic algorithm is included in the KAT framework. The current dummy provider and vectors exist only to exercise registration, dispatch, cleanup, and failure handling.
