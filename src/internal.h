@@ -7,6 +7,7 @@
 #include <scf/cipher.h>
 #include <scf/format.h>
 #include <scf/hash.h>
+#include <scf/kat.h>
 #include <scf/kdf.h>
 #include <scf/keys.h>
 #include <scf/memory.h>

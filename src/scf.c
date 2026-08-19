@@ -150,6 +150,16 @@ const char *scf_status_name(scf_status status)
         return "busy";
     case SCF_STATUS_NAME_TOO_LONG:
         return "name too long";
+    case SCF_STATUS_TEST_FAILED:
+        return "test failed";
+    case SCF_STATUS_TEST_INVALID:
+        return "invalid test";
+    case SCF_STATUS_TEST_UNSUPPORTED:
+        return "unsupported test";
+    case SCF_STATUS_INTERNAL_FAILURE:
+        return "internal failure";
+    case SCF_STATUS_TEST_NO_VECTORS:
+        return "test has no vectors";
     default:
         return "unknown status";
     }
