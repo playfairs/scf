@@ -8,9 +8,37 @@ TEST = $(BUILD_DIR)/scf-test
 TOOL = $(BUILD_DIR)/scf
 CFLAGS = -std=c11 -Wall -Wextra -Werror -Iinclude
 ASMFLAGS = -x assembler-with-cpp
-SRC = src/scf.c src/memory.c src/hash.c src/cipher.c src/kdf.c src/keys.c src/format.c src/provider.c
-TEST_SRC = tests/unit/scf.c tests/unit/memory.c tests/unit/hash.c tests/unit/cipher.c tests/unit/kdf.c tests/unit/keys.c tests/unit/format.c tests/unit/provider.c tests/integration/scarlett.c tests/vectors/scarlett.c
-ASM_SRC = $(ASM_SOURCE) asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/auth.asm asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/cipher.asm asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/hash.asm asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/memory.asm
+
+SRC = \
+	src/scf.c \
+	src/memory.c \
+	src/hash.c \
+	src/cipher.c \
+	src/kdf.c \
+	src/keys.c \
+	src/format.c \
+	src/provider.c \
+	src/kat.c
+
+TEST_SRC = \
+	tests/unit/scf.c \
+	tests/unit/memory.c \
+	tests/unit/hash.c \
+	tests/unit/cipher.c \
+	tests/unit/kdf.c \
+	tests/unit/keys.c \
+	tests/unit/format.c \
+	tests/unit/provider.c \
+	tests/unit/kat.c \
+	tests/integration/scarlett.c \
+	tests/vectors/scarlett.c
+
+ASM_SRC = \
+	$(ASM_SOURCE) \
+	asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/auth.asm \
+	asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/cipher.asm \
+	asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/hash.asm \
+	asm/$(if $(filter x86_64,$(ARCH)),x86_64,aarch64)/memory.asm
 
 ifeq ($(ARCH),x86_64)
 ASM_SOURCE = asm/x86_64/test.asm
