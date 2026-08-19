@@ -3,9 +3,15 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      treefmt-nix,
+    }:
     let
       systems = [
         "x86_64-linux"
@@ -17,7 +23,36 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
     in
     {
-      devShells = forAllSystems (system:
+      formatter = forAllSystems (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+          };
+          formatter = import ./nix/formatter.nix {
+            inherit pkgs treefmt-nix self;
+          };
+        in
+        formatter.wrapper
+      );
+
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+          };
+          formatter = import ./nix/formatter.nix {
+            inherit pkgs treefmt-nix self;
+          };
+        in
+        {
+          formatting = formatter.check;
+        }
+      );
+
+      devShells = forAllSystems (
+        system:
         let
           pkgs = import nixpkgs {
             inherit system;
