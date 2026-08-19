@@ -199,7 +199,19 @@ int scf_unit_kat(void)
                != SCF_STATUS_NOT_FOUND
         || scf_kat_run_all(registry, &result, &count)
                != SCF_STATUS_TEST_UNSUPPORTED
-        || count != 3)
+        || count != 3
+        || scf_kat_unregister(registry,
+                              SCF_PROVIDER_HASH,
+                              77,
+                              1)
+               != SCF_STATUS_SUCCESS
+        || scf_kat_run_provider(registry,
+                                SCF_PROVIDER_HASH,
+                                77,
+                                &result,
+                                &count)
+               != SCF_STATUS_TEST_UNSUPPORTED
+        || count != 2)
     {
         scf_kat_registry_destroy(registry);
         scf_provider_registry_destroy(providers);
@@ -209,12 +221,7 @@ int scf_unit_kat(void)
                            SCF_PROVIDER_HASH,
                            77,
                            1)
-            != SCF_STATUS_SUCCESS
-        || scf_kat_unregister(registry,
-                              SCF_PROVIDER_HASH,
-                              77,
-                              1)
-               != SCF_STATUS_NOT_FOUND
+            != SCF_STATUS_NOT_FOUND
         || scf_kat_registry_destroy(registry)
                != SCF_STATUS_BUSY
         || scf_kat_unregister(registry,

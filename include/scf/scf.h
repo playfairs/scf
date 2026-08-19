@@ -13,8 +13,10 @@ extern "C"
 
 #if defined(_WIN32)
 #define SCF_API __declspec(dllexport)
-#else
+#elif defined(__GNUC__) || defined(__clang__)
 #define SCF_API __attribute__((visibility("default")))
+#else
+#define SCF_API
 #endif
 
     typedef uint8_t scf_byte;

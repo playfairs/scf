@@ -8,7 +8,9 @@
 
 .globl SCF_SELECT
 SCF_SELECT:
-	movq %rdx, %rax
+	testq %rdx, %rdx
+	setne %dl
+	movzbq %dl, %rax
 	negq %rax
 	movq %rax, %rcx
 	andq %rdi, %rax

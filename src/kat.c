@@ -144,10 +144,9 @@ scf_kat_remove_locked(scf_kat_registry *registry,
     }
     if (*entry == target)
     {
-        *entry = target->next;
+        target->removed = 1;
         scf_secure_destroy(target->vectors);
-        scf_internal_clear(target, sizeof(*target));
-        scf_internal_free(target);
+        target->vectors = NULL;
     }
 }
 
@@ -201,15 +200,6 @@ static scf_status scf_kat_copy_vectors(scf_kat_entry *entry)
     scf_size total = 0;
     scf_size offset = 0;
     scf_buffer storage;
-    scf_byte **destinations[] = {
-        (scf_byte **)&entry->descriptor.vector.input.data,
-        (scf_byte **)&entry->descriptor.vector.expected
-            .data,
-        (scf_byte **)&entry->descriptor.vector.key.data,
-        (scf_byte **)&entry->descriptor.vector.nonce.data,
-        (scf_byte **)&entry->descriptor.vector.salt.data,
-        (scf_byte **)&entry->descriptor.vector.auxiliary
-            .data};
 
     for (scf_size index = 0;
          index < sizeof(buffers) / sizeof(buffers[0]);
@@ -222,15 +212,17 @@ static scf_status scf_kat_copy_vectors(scf_kat_entry *entry)
             return SCF_STATUS_OVERFLOW;
         }
     }
-    if (scf_secure_allocate(total, 0, &entry->vectors)
-        != SCF_STATUS_SUCCESS)
+    scf_status status =
+        scf_secure_allocate(total, 0, &entry->vectors);
+    if (status != SCF_STATUS_SUCCESS)
     {
-        return total == 0 ? SCF_STATUS_ALLOCATION_FAILED
-                          : SCF_STATUS_ALLOCATION_FAILED;
+        return status;
     }
     if (scf_secure_data(entry->vectors, &storage)
         != SCF_STATUS_SUCCESS)
     {
+        scf_secure_destroy(entry->vectors);
+        entry->vectors = NULL;
         return SCF_STATUS_INTERNAL_FAILURE;
     }
     for (scf_size index = 0;
@@ -242,11 +234,45 @@ static scf_status scf_kat_copy_vectors(scf_kat_entry *entry)
             scf_internal_copy(storage.data + offset,
                               buffers[index].data,
                               buffers[index].size);
-            *destinations[index] = storage.data + offset;
-        }
-        else
-        {
-            *destinations[index] = NULL;
+            switch (index)
+            {
+            case 0:
+                entry->descriptor.vector.input =
+                    (scf_const_buffer){storage.data
+                                           + offset,
+                                       buffers[index].size};
+                break;
+            case 1:
+                entry->descriptor.vector.expected =
+                    (scf_const_buffer){storage.data
+                                           + offset,
+                                       buffers[index].size};
+                break;
+            case 2:
+                entry->descriptor.vector.key =
+                    (scf_const_buffer){storage.data
+                                           + offset,
+                                       buffers[index].size};
+                break;
+            case 3:
+                entry->descriptor.vector.nonce =
+                    (scf_const_buffer){storage.data
+                                           + offset,
+                                       buffers[index].size};
+                break;
+            case 4:
+                entry->descriptor.vector.salt =
+                    (scf_const_buffer){storage.data
+                                           + offset,
+                                       buffers[index].size};
+                break;
+            default:
+                entry->descriptor.vector.auxiliary =
+                    (scf_const_buffer){storage.data
+                                           + offset,
+                                       buffers[index].size};
+                break;
+            }
         }
         offset += buffers[index].size;
     }
@@ -573,12 +599,28 @@ scf_kat_registry_destroy(scf_kat_registry *registry)
     {
         return SCF_STATUS_INVALID_ARGUMENT;
     }
+    scf_kat_entry *entry;
+
     scf_kat_lock(registry);
-    if (registry->entries != NULL)
+    for (entry = registry->entries; entry != NULL;
+         entry = entry->next)
     {
-        scf_kat_unlock(registry);
-        return SCF_STATUS_BUSY;
+        if (!entry->removed || entry->references != 0)
+        {
+            scf_kat_unlock(registry);
+            return SCF_STATUS_BUSY;
+        }
     }
+    entry = registry->entries;
+    while (entry != NULL)
+    {
+        scf_kat_entry *next = entry->next;
+        scf_secure_destroy(entry->vectors);
+        scf_internal_clear(entry, sizeof(*entry));
+        scf_internal_free(entry);
+        entry = next;
+    }
+    registry->entries = NULL;
     scf_kat_unlock(registry);
     scf_internal_clear(registry, sizeof(*registry));
     scf_internal_free(registry);

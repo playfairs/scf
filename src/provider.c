@@ -124,6 +124,18 @@ static void scf_provider_remove_entry_locked(
     }
 }
 
+static void scf_provider_release_reference_locked(
+    scf_provider_entry *entry)
+{
+    scf_provider_registry *registry = entry->registry;
+
+    entry->references--;
+    if (entry->removed && entry->references == 0)
+    {
+        scf_provider_remove_entry_locked(registry, entry);
+    }
+}
+
 scf_status scf_provider_registry_create(
     scf_provider_registry **registry)
 {
@@ -282,7 +294,7 @@ scf_provider_context_create(scf_provider_registry *registry,
     if (memory_status != SCF_STATUS_SUCCESS)
     {
         scf_provider_lock(registry);
-        entry->references--;
+        scf_provider_release_reference_locked(entry);
         scf_provider_unlock(registry);
         return memory_status;
     }
@@ -333,11 +345,7 @@ void scf_provider_context_destroy(
     scf_secure_allocation *memory = context->memory;
     scf_secure_destroy(memory);
     scf_provider_lock(registry);
-    entry->references--;
-    if (entry->removed && entry->references == 0)
-    {
-        scf_provider_remove_entry_locked(registry, entry);
-    }
+    scf_provider_release_reference_locked(entry);
     scf_provider_unlock(registry);
 }
 

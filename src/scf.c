@@ -233,6 +233,7 @@ scf_status scf_self_test(void)
         return SCF_STATUS_INVALID_STATE;
     }
     if (scf_internal_select64(9, 3, 1) != 9
+        || scf_internal_select64(9, 3, 2) != 9
         || scf_internal_select64(9, 3, 0) != 3)
     {
         return SCF_STATUS_INVALID_STATE;
