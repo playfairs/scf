@@ -120,6 +120,14 @@ const char *scf_status_name(scf_status status)
         return "overflow";
     case SCF_STATUS_FORMAT_INVALID:
         return "invalid format";
+    case SCF_STATUS_DUPLICATE:
+        return "duplicate";
+    case SCF_STATUS_NOT_FOUND:
+        return "not found";
+    case SCF_STATUS_BUSY:
+        return "busy";
+    case SCF_STATUS_NAME_TOO_LONG:
+        return "name too long";
     default:
         return "unknown status";
     }

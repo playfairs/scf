@@ -8,6 +8,7 @@ int scf_unit_cipher(void);
 int scf_unit_kdf(void);
 int scf_unit_keys(void);
 int scf_unit_format(void);
+int scf_unit_provider(void);
 int scf_vector_framework(void);
 
 int main(void)
@@ -22,6 +23,7 @@ int main(void)
         {"kdf", scf_unit_kdf},
         {"keys", scf_unit_keys},
         {"format", scf_unit_format},
+        {"provider", scf_unit_provider},
         {"vectors", scf_vector_framework}
     };
 
