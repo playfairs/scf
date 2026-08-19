@@ -37,3 +37,5 @@ Provider callbacks must not retain vector pointers after returning. The callback
 The provider registry must remain alive for the entire lifetime of its KAT registry and provider contexts. Provider descriptors and their callback functions are borrowed by hash, cipher, KDF, provider, and KAT contexts; the descriptor storage and callback code must remain valid until those contexts are destroyed.
 
 No cryptographic algorithm is included in the KAT framework. The current dummy provider and vectors exist only to exercise registration, dispatch, cleanup, and failure handling.
+
+SHA-256 is the first registered cryptographic provider. Its state is kept in secure memory, its public provider descriptor is exposed through `scf_sha256_hash_provider`, and registration is performed with `scf_sha256_register`. The portable C compression routine is the reference backend; the architecture backend entry points preserve the same internal ABI and are checked against the reference path.

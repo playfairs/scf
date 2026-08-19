@@ -1,4 +1,5 @@
 #include <scf/scf.h>
+#include <scf/sha256.h>
 
 #include "internal.h"
 
@@ -205,6 +206,16 @@ scf_status scf_self_test(void)
     scf_byte source[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     scf_byte copied[8] = {0};
     uint64_t word = UINT64_C(0x0102030405060708);
+    scf_provider_registry *providers = NULL;
+    scf_hash_context *hash = NULL;
+    scf_byte digest[SCF_SHA256_DIGEST_SIZE];
+    scf_size written = 0;
+    static const scf_byte abc[] = "abc";
+    static const scf_byte abc_digest[] = {
+        0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea,
+        0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
+        0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+        0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad};
 
     if (scf_test(UINT64_C(41)) != UINT64_C(42))
     {
@@ -235,6 +246,42 @@ scf_status scf_self_test(void)
     if (scf_internal_select64(9, 3, 1) != 9
         || scf_internal_select64(9, 3, 2) != 9
         || scf_internal_select64(9, 3, 0) != 3)
+    {
+        return SCF_STATUS_INVALID_STATE;
+    }
+    if (scf_provider_registry_create(&providers)
+            != SCF_STATUS_SUCCESS
+        || scf_sha256_register(providers)
+               != SCF_STATUS_SUCCESS
+        || scf_hash_context_create(
+               scf_sha256_hash_provider(),
+               &hash)
+               != SCF_STATUS_SUCCESS
+        || scf_hash_update(
+               hash,
+               (scf_const_buffer){abc, sizeof(abc) - 1})
+               != SCF_STATUS_SUCCESS
+        || scf_hash_final(
+               hash,
+               (scf_buffer){digest, sizeof(digest)},
+               &written)
+               != SCF_STATUS_SUCCESS
+        || written != sizeof(abc_digest)
+        || !scf_internal_equal(digest,
+                               abc_digest,
+                               sizeof(abc_digest)))
+    {
+        scf_hash_context_destroy(hash);
+        scf_provider_registry_destroy(providers);
+        return SCF_STATUS_INVALID_STATE;
+    }
+    scf_hash_context_destroy(hash);
+    if (scf_provider_unregister(providers,
+                                SCF_PROVIDER_HASH,
+                                SCF_SHA256_PROVIDER_ID)
+            != SCF_STATUS_SUCCESS
+        || scf_provider_registry_destroy(providers)
+               != SCF_STATUS_SUCCESS)
     {
         return SCF_STATUS_INVALID_STATE;
     }

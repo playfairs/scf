@@ -5,6 +5,7 @@
 int scf_unit_scf(void);
 int scf_unit_memory(void);
 int scf_unit_kat(void);
+int scf_unit_sha256(void);
 int scf_unit_hash(void);
 int scf_unit_cipher(void);
 int scf_unit_kdf(void);
@@ -22,6 +23,7 @@ int main(void)
     } tests[] = {{"scf", scf_unit_scf},
                  {"memory", scf_unit_memory},
                  {"kat", scf_unit_kat},
+                 {"sha256", scf_unit_sha256},
                  {"hash", scf_unit_hash},
                  {"cipher", scf_unit_cipher},
                  {"kdf", scf_unit_kdf},

@@ -18,7 +18,8 @@ SRC = \
 	src/keys.c \
 	src/format.c \
 	src/provider.c \
-	src/kat.c
+	src/kat.c \
+	src/sha256.c
 
 TEST_SRC = \
 	tests/unit/scf.c \
@@ -30,6 +31,7 @@ TEST_SRC = \
 	tests/unit/format.c \
 	tests/unit/provider.c \
 	tests/unit/kat.c \
+	tests/unit/sha256.c \
 	tests/integration/scarlett.c \
 	tests/vectors/scarlett.c
 
