@@ -1,0 +1,10 @@
+#ifndef SCF_VERSION_H
+#define SCF_VERSION_H
+
+#define SCF_VERSION_MAJOR 0
+#define SCF_VERSION_MINOR 1
+#define SCF_VERSION_PATCH 0
+
+#define SCF_VERSION "0.1.0"
+
+#endif
