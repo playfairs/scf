@@ -6,10 +6,10 @@ SCARLETT1
 
 ---
 
-A cryptographic framework written in C and Assembly.
+Криптографический фреймворк, написанный на языках C и Assembly.
 
-SCF is the SCARLETT Cryptographic Framework foundation written in C11 and GNU Assembly-compatible Assembly.
+SCF — это базовая часть криптографического фреймворка SCARLETT, написанная на стандартах C11 и ассемблере, совместимом с GNU Assembler.
 
-The foundation currently provides version definitions, architecture selection, a C-to-Assembly test path, a static library, and a basic test executable.
+На данный момент эта основа включает в себя определения версий, выбор архитектуры, механизм тестирования взаимодействия кода на C и ассемблере, статическую библиотеку, а также базовый исполняемый файл для проведения тестов.
 
-SCARLETT1 and cryptographic algorithms are not implemented.
+Реализация SCARLETT1 и самих криптографических алгоритмов пока отсутствует.
